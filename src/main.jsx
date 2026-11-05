@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Activity, ArrowDown, ArrowUpRight, Box, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Eye, LayoutDashboard, LogOut, Package, Plus, Search, Settings, ShoppingBag, ShoppingCart, SlidersHorizontal, Sparkles, Tag, Trash2, TrendingUp, X } from 'lucide-react';
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, Box, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Eye, LayoutDashboard, LogOut, Minus, Package, Plus, Search, Settings, ShoppingBag, ShoppingCart, SlidersHorizontal, Sparkles, Tag, Trash2, TrendingUp, X } from 'lucide-react';
 import './styles.css';
 
 const API = 'https://dummyjson.com/products';
 const CART_API = 'https://dummyjson.com/carts';
 const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value ?? 0);
 
-function App() {
+function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [carts, setCarts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -109,7 +109,7 @@ function App() {
       <div className="sidebar-bottom"><div className="sidebar-api"><span className="api-status-dot"/><span>API connected<small>DummyJSON Products</small></span></div><button className="sidebar-logout" onClick={() => setNotice('Saw Joshua is signed in to this demo dashboard')}><LogOut size={16} /> Sign out</button></div>
     </aside>
     <main className="dashboard-main" id="dashboard">
-      <header className="dashboard-topbar"><div className="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div><div className="topbar-user"><div className="topbar-avatar">SJ</div><div><strong>Saw Joshua</strong><span>Administrator</span></div><ChevronDown size={15}/></div></header>
+      <header className="dashboard-topbar"><div className="breadcrumbs">Workspace <span>/</span> <strong>Overview</strong></div><div className="topbar-user"><a className="view-store-link" href="/" target="_blank" rel="noreferrer">View shop <ArrowUpRight size={13}/></a><div className="topbar-avatar">SJ</div><div><strong>Saw Joshua</strong><span>Administrator</span></div><ChevronDown size={15}/></div></header>
       <div className="dashboard-content">
         <section className="welcome-row"><div><p className="dashboard-kicker">THURSDAY, NOVEMBER 5</p><h1>Good morning, Saw Joshua <span>✳</span></h1><p className="welcome-note">Here’s what’s happening with your store today.</p></div><button className="primary-action" onClick={() => activeSection === 'carts' ? setCartModal({ cart: null }) : setModal({ product: null })}><Plus size={17}/> {activeSection === 'carts' ? 'Add cart' : 'Add product'}</button></section>
         <section className="stats-grid">
@@ -140,6 +140,53 @@ function App() {
     {cartModal && <CartModal cart={cartModal.cart} edit={cartModal.edit} products={products} onClose={() => setCartModal(null)} onSave={saveCart} onDelete={deleteCart}/>}
   </div>;
 }
+
+function CustomerStorefront() {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [category, setCategory] = useState('all');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('featured');
+  const [cart, setCart] = useState({});
+  const [cartOpen, setCartOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  useEffect(() => {
+    Promise.all([fetch(`${API}?limit=0`), fetch(`${API}/category-list`)]).then(async ([productResponse, categoryResponse]) => {
+      if (!productResponse.ok || !categoryResponse.ok) throw new Error('We could not load the collection. Please try again.');
+      const data = await productResponse.json(); setProducts(data.products || []); setCategories(await categoryResponse.json());
+    }).catch((err) => setError(err.message || 'Unable to connect to the product catalog.')).finally(() => setLoading(false));
+  }, []);
+  useEffect(() => { if (notice) { const timer = setTimeout(() => setNotice(''), 2400); return () => clearTimeout(timer); } }, [notice]);
+  const visible = useMemo(() => {
+    let list = products.filter((product) => (category === 'all' || product.category === category) && (!search.trim() || `${product.title} ${product.brand || ''} ${product.category}`.toLowerCase().includes(search.trim().toLowerCase())));
+    if (sort === 'price-low') list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === 'price-high') list = [...list].sort((a, b) => b.price - a.price);
+    if (sort === 'rating') list = [...list].sort((a, b) => b.rating - a.rating);
+    return list;
+  }, [products, category, search, sort]);
+  const cartLines = Object.entries(cart).map(([id, quantity]) => ({ product: products.find((item) => item.id === Number(id)), quantity })).filter((line) => line.product);
+  const cartCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
+  const cartTotal = cartLines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+  function changeQuantity(id, delta) { setCart((current) => { const quantity = (current[id] || 0) + delta; const next = { ...current }; if (quantity <= 0) delete next[id]; else next[id] = quantity; return next; }); }
+  function checkout() { setCart({}); setCartOpen(false); setNotice('Thanks! Checkout is a demo and no order was placed.'); }
+
+  return <div className="shop-site">
+    <div className="shop-promo">A thoughtful little shop for everyday living <span>Free shipping on orders over $75</span></div>
+    <header className="shop-header"><a className="shop-logo" href="/">Josh<span>®</span><small>GOOD THINGS, EVERYDAY</small></a><nav><a className="current" href="#shop">Shop</a><a href="#story">Our story</a><a href="#footer">Contact</a></nav><div className="shop-actions"><label className="shop-search"><Search size={17}/><input aria-label="Search products" placeholder="Search" value={search} onChange={(event) => setSearch(event.target.value)}/></label><button className="shop-cart-button" onClick={() => setCartOpen(true)} aria-label={`Shopping bag with ${cartCount} items`}><ShoppingBag size={19}/><span>Bag ({cartCount})</span></button><a className="shop-admin-link" href="/admin">Admin</a></div></header>
+    <main>
+      <section className="shop-hero"><img src="https://images.unsplash.com/photo-1490312278390-ab64016e0aa9?auto=format&fit=crop&w=2200&q=85" alt="A softly lit, calm living room"/><div className="shop-hero-overlay"/><div className="shop-hero-copy"><span>THE JOSH COLLECTION</span><h1>Everyday,<br/><em>considered.</em></h1><p>Thoughtful things for the spaces you live in and the life you make there.</p><a href="#shop">Shop the collection <ArrowRight size={15}/></a></div></section>
+      <section className="shop-intro" id="shop"><div><span>THE COLLECTION</span><h2>Find your everyday favourite.</h2></div><p>Small-batch essentials, made to be reached for again and again.</p></section>
+      <section className="shop-catalog"><aside className="shop-categories"><h3>Categories</h3><button className={category === 'all' ? 'chosen' : ''} onClick={() => setCategory('all')}>All products</button>{categories.map((item) => <button key={item} className={category === item ? 'chosen' : ''} onClick={() => setCategory(item)}>{item.replaceAll('-', ' ')}</button>)}</aside><div className="shop-results"><div className="shop-toolbar"><span>{visible.length} pieces</span><label>Sort by <select value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="rating">Top rated</option></select></label></div>{error && <div className="shop-error">{error}</div>}{loading ? <div className="shop-loading">Gathering the collection…</div> : <div className="shop-grid">{visible.map((product) => <article className="shop-product" key={product.id}><div className="shop-product-image"><img src={product.thumbnail || product.images?.[0]} alt={product.title} loading="lazy"/><span>{product.discountPercentage > 12 ? 'A good find' : product.category.replaceAll('-', ' ')}</span></div><div className="shop-product-meta">{product.brand || product.category.replaceAll('-', ' ')}</div><h3>{product.title}</h3><div className="shop-price-row"><strong>{money(product.price)}</strong><span>★ {product.rating?.toFixed(1)}</span></div><button className="add-to-bag" onClick={() => { changeQuantity(product.id, 1); setNotice(`${product.title} added to your bag`); }}>Add to bag <Plus size={14}/></button></article>)}</div>}{!loading && !error && !visible.length && <div className="shop-empty">No products found. Try another search.</div>}</div></section>
+      <section className="shop-story" id="story"><span>THE JOSH WAY</span><h2>Good things, made to last.</h2><p>Useful, beautiful things for the home and the everyday. Thoughtfully chosen, always.</p></section>
+    </main><footer className="shop-footer" id="footer"><a className="shop-logo" href="/">Josh<span>®</span><small>GOOD THINGS, EVERYDAY</small></a><span>Product samples provided by DummyJSON</span><a href="/admin">Admin dashboard</a></footer>
+    {cartOpen && <div className="shop-drawer-backdrop" onMouseDown={(event) => event.target === event.currentTarget && setCartOpen(false)}><aside className="shop-drawer"><div className="drawer-heading"><div><span>YOUR BAG</span><h2>{cartCount ? `${cartCount} item${cartCount === 1 ? '' : 's'}` : 'A little empty'}</h2></div><button onClick={() => setCartOpen(false)} aria-label="Close bag"><X size={20}/></button></div>{!cartLines.length ? <div className="drawer-empty"><ShoppingBag size={27}/><p>Your bag is waiting for something lovely.</p><button onClick={() => setCartOpen(false)}>Continue shopping</button></div> : <><div className="drawer-lines">{cartLines.map(({product, quantity}) => <div className="drawer-line" key={product.id}><img src={product.thumbnail} alt=""/><div className="drawer-line-info"><strong>{product.title}</strong><span>{money(product.price)}</span><div className="quantity-control"><button onClick={() => changeQuantity(product.id, -1)} aria-label="Decrease quantity"><Minus size={12}/></button><span>{quantity}</span><button onClick={() => changeQuantity(product.id, 1)} aria-label="Increase quantity"><Plus size={12}/></button></div></div><b>{money(product.price * quantity)}</b></div>)}</div><div className="drawer-summary"><div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div><p>Shipping and taxes are calculated at checkout.</p><button onClick={checkout}>Continue to checkout <ArrowRight size={15}/></button></div></>}</aside></div>}
+    {notice && <div className="shop-toast"><Check size={15}/>{notice}</div>}
+  </div>;
+}
+
+function App() { return window.location.pathname.startsWith('/admin') ? <AdminDashboard/> : <CustomerStorefront/>; }
 
 function ProductModal({ product, onClose, onSave, onDelete }) {
   const [form, setForm] = useState({ title: product?.title || '', description: product?.description || '', price: product?.price || '', category: product?.category || 'beauty', thumbnail: product?.thumbnail || '', stock: product?.stock ?? 10, brand: product?.brand || '' });

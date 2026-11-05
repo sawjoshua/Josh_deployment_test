@@ -1,6 +1,6 @@
 # Josh Admin Dashboard
 
-A React admin dashboard for Saw Joshua, backed by the [DummyJSON Products API](https://dummyjson.com/docs/products) and [Carts API](https://dummyjson.com/docs/carts). It provides catalog metrics, product search and category filters, sorting, pagination, product create/edit/delete, and cart review/create/edit/delete. This project is the admin dashboard only; it has no customer storefront.
+A React application with a customer storefront at `/` and an admin dashboard for Saw Joshua at `/admin`. It uses the [DummyJSON Products API](https://dummyjson.com/docs/products) and [Carts API](https://dummyjson.com/docs/carts). The storefront lets customers browse, search, and filter products and keep a temporary shopping bag in the browser. The admin dashboard provides catalog metrics, product and cart search, filtering, sorting, pagination, and product/cart create, edit, and delete controls.
 
 ## Run locally
 
@@ -8,6 +8,7 @@ A React admin dashboard for Saw Joshua, backed by the [DummyJSON Products API](h
 2. In this folder, run `npm install`.
 3. Run `npm run dev` and open the local URL Vite prints.
 4. Run `npm run build` to create the production site in `dist/`.
+5. Visit `/` for the customer shop and `/admin` for the admin dashboard.
 
 ## Publish on Netlify
 
@@ -22,4 +23,4 @@ Vercel works too: import the repository, choose the Vite preset, and use `npm ru
 
 DummyJSON is a mock API. Product and cart reads come from its sample dataset. POST, PUT, and DELETE responses simulate successful writes but do not persist changes on the server. This UI reflects write results during the current browser session; refreshing reloads the original API data. Use a database-backed API if you need real, persistent catalog management.
 
-The dashboard identifies Saw Joshua as its administrator, but it is a demonstration interface without login or access protection. Anyone who can access a deployed copy can use its admin controls. Do not publish it as a real private admin site without adding authentication and authorization on a trusted backend.
+The dashboard identifies Saw Joshua as its administrator, but it is a demonstration interface without login or access protection. Anyone who can visit `/admin` can use its admin controls. The customer bag is temporary and checkout is a demonstration; no order is submitted. Do not use this as a real store until you add backend authentication, authorization, order processing, and persistent storage.
