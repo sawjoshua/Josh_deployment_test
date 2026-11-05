@@ -1,6 +1,6 @@
 # Josh Admin Dashboard
 
-A React admin dashboard for Saw Joshua, backed by the [DummyJSON Products API](https://dummyjson.com/docs/products). It provides catalog metrics, product search and category filters, sorting, pagination, and create/edit/delete controls. This project is the admin dashboard only; it has no customer storefront.
+A React admin dashboard for Saw Joshua, backed by the [DummyJSON Products API](https://dummyjson.com/docs/products) and [Carts API](https://dummyjson.com/docs/carts). It provides catalog metrics, product search and category filters, sorting, pagination, product create/edit/delete, and cart review/create/edit/delete. This project is the admin dashboard only; it has no customer storefront.
 
 ## Run locally
 
@@ -20,6 +20,6 @@ Vercel works too: import the repository, choose the Vite preset, and use `npm ru
 
 ## API behavior to know
 
-DummyJSON is a mock API. Product reads come from its sample dataset. POST, PUT, and DELETE responses simulate successful writes but do not persist changes on the server. This UI reflects write results during the current browser session; refreshing reloads the original API data. Use a database-backed API if you need real, persistent catalog management.
+DummyJSON is a mock API. Product and cart reads come from its sample dataset. POST, PUT, and DELETE responses simulate successful writes but do not persist changes on the server. This UI reflects write results during the current browser session; refreshing reloads the original API data. Use a database-backed API if you need real, persistent catalog management.
 
 The dashboard identifies Saw Joshua as its administrator, but it is a demonstration interface without login or access protection. Anyone who can access a deployed copy can use its admin controls. Do not publish it as a real private admin site without adding authentication and authorization on a trusted backend.
